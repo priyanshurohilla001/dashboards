@@ -5,6 +5,7 @@ import Signuppage from "./pages/Signuppage";
 import Dashboardpage from "./pages/Dashboardpage";
 import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
+import { Toaster } from "sonner";
 
 const HeaderBasic = ({ children }) => (
   <div>
@@ -39,6 +40,7 @@ export default function App() {
         } />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <Toaster/>
     </BrowserRouter>
   );
 }
