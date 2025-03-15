@@ -1,55 +1,95 @@
+import React from "react";
 import { useAuth } from "@/context/AuthContext";
-import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
+import SwitchTheme from "./SwitchTheme";
+import { Button } from "./ui/button";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle
+} from "./ui/navigation-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { User, LogOut, LayoutDashboard, Home } from "lucide-react";
 
 const Header = () => {
-
-  const {token , login , logout , isAuthenticated} = useAuth();
+  const { isAuthenticated, logout , user } = useAuth();
   const navigate = useNavigate();
 
   return (
-    <div className="flex w-full justify-between p-4 bg-gray-50 shadow">
-      <a onClick={() => navigate("/")}>
-        <h3 className="text-2xl font-bold">Doc</h3>
-      </a>
-      {isAuthenticated ? (
-        <div>
+    <header className="border-b sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between py-6">
+        <div className="flex items-center gap-2">
           <Button
-            variant="destructive"
-            onClick={logout}
+            variant="ghost"
+            className="font-bold text-xl"
+            onClick={() => navigate("/")}
           >
-            Logout
-          </Button>
-          <Button
-            className="ml-2"
-            onClick={() => {
-              navigate("/dashboard");
-            }}
-          >
-            Dashboard
+            <Home className="mr-2 h-5 w-5" /> Doc
           </Button>
         </div>
-      ) : (
-        <div>
-          <Button
-            onClick={() => {
-              navigate("/signup");
-            }}
-          >
-            Signup
-          </Button>
-          <Button
-            variant="secondary"
-            className="ml-2"
-            onClick={() => {
-              navigate("/login");
-            }}
-          >
-            Login
-          </Button>
+
+        <div className="flex items-center gap-4">
+          {isAuthenticated ? (
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Account</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[200px] gap-3 p-4">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Button 
+                            variant="ghost" 
+                            className="w-full justify-start"
+                            onClick={() => navigate("/dashboard")}
+                          >
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            Dashboard
+                          </Button>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Button 
+                            variant="ghost" 
+                            className="w-full justify-start text-destructive"
+                            onClick={logout}
+                          >
+                            <LogOut className="mr-2 h-4 w-4" />
+                            Logout
+                          </Button>
+                        </NavigationMenuLink>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          ) : (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate("/login")}>
+                Login
+              </Button>
+              <Button onClick={() => navigate("/signup")}>
+                Sign up
+              </Button>
+            </div>
+          )}
+          <SwitchTheme />
         </div>
-      )}
-    </div>
+      </div>
+    </header>
   );
 };
 

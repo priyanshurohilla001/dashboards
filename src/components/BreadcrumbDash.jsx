@@ -15,11 +15,9 @@ const BreadcrumbDash = () => {
 
   // Generate breadcrumb items based on current path
   const breadcrumbItems = useMemo(() => {
-    console.log("pathname :", location.pathname);
     const pathSegments = location.pathname
       .split("/")
       .filter((segment) => segment);
-    console.log("pathsegments :", pathSegments);
     const items = [];
 
     // Always add Dashboard as the first item

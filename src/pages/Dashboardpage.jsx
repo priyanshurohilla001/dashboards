@@ -2,6 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout.jsx";
+import { Button } from "@/components/ui/button.jsx";
 
 // Dashboard home component
 const DashboardHome = () => {
@@ -10,6 +11,9 @@ const DashboardHome = () => {
     <div>
       <h2 className="text-2xl font-semibold">Hello {user?.name || "Doctor"}</h2>
       <p className="mt-2">Welcome to your dashboard</p>
+      <Button>
+        hello
+      </Button>
     </div>
   );
 };
