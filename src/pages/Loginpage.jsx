@@ -11,13 +11,16 @@ import { useAuth } from "@/context/AuthContext";
 import { Label } from "@radix-ui/react-label";
 import axios from "axios";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const Loginpage = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const location = useLocation();
+  const returnTo = location.state?.from || "/dashboard";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,8 +36,7 @@ const Loginpage = () => {
       });
 
       login(res.data.token);
-      toast.success("Login successful");
-      navigate("/dashboard");
+      navigate(returnTo, { replace: true });
     } catch (error) {
       console.log(error);
       if (error.response) {

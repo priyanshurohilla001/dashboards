@@ -25,7 +25,6 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUser = async () => {
       try {
-        setLoading(true);
         const res = await axios.get(
           `${import.meta.env.VITE_SERVER_URL}/api/doctor/profile`,
           {
@@ -35,6 +34,7 @@ export const AuthProvider = ({ children }) => {
           }
         );
         setUser(res.data);
+        setLoading(false);
       } catch (err) {
         const errorMessage =
           err.response?.data?.message || "Session expired, please login again";
@@ -45,10 +45,9 @@ export const AuthProvider = ({ children }) => {
         setToken(null);
         navigate("/login");
       }
-
-      localStorage.setItem(TOKEN_KEY, token);
-      fetchUser();
     };
+    localStorage.setItem(TOKEN_KEY, token);
+    fetchUser();
   }, [token, navigate]);
 
   function logout() {
