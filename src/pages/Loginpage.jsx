@@ -7,14 +7,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/AuthContext";
 import { Label } from "@radix-ui/react-label";
 import axios from "axios";
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const Loginpage = () => {
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -30,7 +32,7 @@ const Loginpage = () => {
         password,
       });
 
-      localStorage.setItem("token", res.data.token);
+      login(res.data.token);
       toast.success("Login successful");
       navigate("/dashboard");
     } catch (error) {

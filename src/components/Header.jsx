@@ -1,29 +1,22 @@
-import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 
 const Header = () => {
-  const [istoken, setIstoken] = useState(false);
-  useEffect(() => {
-    if (localStorage.getItem("token")) {
-      setIstoken(true);
-    }
-  }, [istoken]);
 
+  const {token , login , logout , isAuthenticated} = useAuth();
   const navigate = useNavigate();
+
   return (
     <div className="flex w-full justify-between p-4 bg-gray-50 shadow">
-      <button onClick={() => navigate("/")}>
+      <a onClick={() => navigate("/")}>
         <h3 className="text-2xl font-bold">Doc</h3>
-      </button>
-      {istoken ? (
+      </a>
+      {isAuthenticated ? (
         <div>
           <Button
             variant="destructive"
-            onClick={() => {
-              localStorage.removeItem("token");
-              setIstoken(false);
-            }}
+            onClick={logout}
           >
             Logout
           </Button>

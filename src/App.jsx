@@ -1,4 +1,4 @@
-import { Routes, Route, BrowserRouter } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Homepage from "./pages/Homepage";
 import Loginpage from "./pages/Loginpage";
 import Signuppage from "./pages/Signuppage";
@@ -16,31 +16,43 @@ const HeaderBasic = ({ children }) => (
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <>
       <Routes>
-        <Route path="/" element={
-          <HeaderBasic>
-            <Homepage />
-          </HeaderBasic>
-        } />
-        <Route path="/login" element={
-          <HeaderBasic>
-            <Loginpage />
-          </HeaderBasic>
-        } />
-        <Route path="/signup" element={
-          <HeaderBasic>
-            <Signuppage />
-          </HeaderBasic>
-        } />
-        <Route path="/dashboard" element={
-          <HeaderBasic>
-            <Dashboardpage />
-          </HeaderBasic>
-        } />
+        <Route
+          path="/"
+          element={
+            <HeaderBasic>
+              <Homepage />
+            </HeaderBasic>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <HeaderBasic>
+              <Loginpage />
+            </HeaderBasic>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <HeaderBasic>
+              <Signuppage />
+            </HeaderBasic>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <HeaderBasic>
+              <Dashboardpage />
+            </HeaderBasic>
+          }
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <Toaster/>
-    </BrowserRouter>
+      <Toaster />
+    </>
   );
 }
