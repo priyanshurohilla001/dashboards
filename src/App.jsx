@@ -37,7 +37,7 @@ export default function App() {
           }
         />
         <Route
-          path="/dashboard"
+          path="/dashboard/*"
           element={
             <ProtectedRoute>
               <Dashboardpage />
@@ -60,7 +60,6 @@ const HeaderBasic = ({ children }) => (
 const ProtectedRoute = ({ children }) => {
   const { loading, isAuthenticated } = useAuth();
 
-  console.log(loading);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
