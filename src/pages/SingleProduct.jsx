@@ -5,8 +5,9 @@ import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, AreaChart, Area } from 'recharts'
-import { Loader2, TrendingUp } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, AreaChart, Area, Cell } from 'recharts'
+import { Loader2, TrendingUp, ThumbsUp, ThumbsDown, Minus, BarChart3, PieChart as PieChartIcon } from 'lucide-react'
+import { Badge } from "@/components/ui/badge"
 
 // Create chart components based on shadcn pattern
 const ChartConfig = {
@@ -240,10 +241,12 @@ const SingleProduct = () => {
 
   // Prepare data for the sentiment pie chart
   const sentimentData = [
-    { name: "positive", value: product.sentiment_distribution.positive, fill: "var(--color-positive)" },
-    { name: "negative", value: product.sentiment_distribution.negative, fill: "var(--color-negative)" },
-    { name: "neutral", value: product.sentiment_distribution.neutral, fill: "var(--color-neutral)" }
+    { name: "Positive", value: product.sentiment_distribution.positive, fill: "var(--color-positive)" },
+    { name: "Negative", value: product.sentiment_distribution.negative, fill: "var(--color-negative)" },
+    { name: "Neutral", value: product.sentiment_distribution.neutral, fill: "var(--color-neutral)" }
   ];
+  
+  const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
 
   // Prepare data for the feature importance chart
   const featureImportanceData = product.feature_importance.map(item => ({
@@ -256,158 +259,224 @@ const SingleProduct = () => {
   const totalSentiment = sentimentData.reduce((acc, item) => acc + item.value, 0);
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{product.product_name}</h1>
-        <p className="text-muted-foreground">ID: {product.product_id}</p>
+    <div className="container mx-auto py-6 px-4">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-3xl font-bold">{product.product_name}</h1>
+            <Badge variant="outline" className="ml-2">ID: {product.product_id}</Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-primary/20 text-primary hover:bg-primary/30">
+              Positive: {product.sentiment_distribution.positive}%
+            </Badge>
+            <Badge variant="destructive" className="bg-destructive/20 text-destructive hover:bg-destructive/30">
+              Negative: {product.sentiment_distribution.negative}%
+            </Badge>
+          </div>
+        </div>
+        
+        <div className="mt-4 md:mt-0 flex items-center gap-2">
+          <Badge variant="outline" className="flex items-center gap-1">
+            <ThumbsUp className="h-3.5 w-3.5" /> Sentiment Analysis
+          </Badge>
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <BarChart3 className="h-3.5 w-3.5" /> Feedback Data
+          </Badge>
+        </div>
       </div>
 
-      {/* Sentiment Overview */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Sentiment Overview</CardTitle>
-          <CardDescription>Customer feedback sentiment distribution</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={ChartConfig} className="mx-auto aspect-square max-h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Tooltip content={<ChartTooltipContent hideLabel />} />
-                <Pie
-                  data={sentimentData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
-                  paddingAngle={2}
-                >
-                  <text
-                    x="50%"
-                    y="50%"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
+      {/* Overview Section - Two Cards Side by Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Sentiment Overview */}
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Sentiment Overview</CardTitle>
+                <CardDescription>Customer feedback distribution</CardDescription>
+              </div>
+              <PieChartIcon className="h-5 w-5 text-muted-foreground" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={ChartConfig} className="mx-auto aspect-square max-h-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Tooltip content={<ChartTooltipContent hideLabel />} />
+                  <Pie
+                    data={sentimentData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={70}
+                    paddingAngle={2}
                   >
-                    <tspan
+                    {sentimentData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                    <text
                       x="50%"
                       y="50%"
-                      className="fill-foreground text-2xl font-bold"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
                     >
-                      {totalSentiment}
-                    </tspan>
-                    <tspan
-                      x="50%"
-                      y="50%"
-                      dy="1.5em"
-                      className="fill-muted-foreground text-sm"
-                    >
-                      Feedback
-                    </tspan>
-                  </text>
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-          <div className="mt-6 flex justify-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-[hsl(var(--chart-1))]" />
-              <span>Positive ({product.sentiment_distribution.positive}%)</span>
+                      <tspan
+                        x="50%"
+                        y="50%"
+                        className="fill-foreground text-xl font-bold"
+                      >
+                        {totalSentiment}
+                      </tspan>
+                      <tspan
+                        x="50%"
+                        y="50%"
+                        dy="1.5em"
+                        className="fill-muted-foreground text-xs"
+                      >
+                        Total
+                      </tspan>
+                    </text>
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+            
+            <div className="mt-2 grid grid-cols-3 gap-1">
+              <div className="flex flex-col items-center p-2 rounded-md bg-primary/5">
+                <div className="flex items-center gap-1 text-sm mb-1">
+                  <div className="h-2 w-2 rounded-full bg-[hsl(var(--chart-1))]" />
+                  <span className="font-medium">Positive</span>
+                </div>
+                <span className="text-lg font-bold">{product.sentiment_distribution.positive}%</span>
+              </div>
+              <div className="flex flex-col items-center p-2 rounded-md bg-destructive/5">
+                <div className="flex items-center gap-1 text-sm mb-1">
+                  <div className="h-2 w-2 rounded-full bg-[hsl(var(--chart-2))]" />
+                  <span className="font-medium">Negative</span>
+                </div>
+                <span className="text-lg font-bold">{product.sentiment_distribution.negative}%</span>
+              </div>
+              <div className="flex flex-col items-center p-2 rounded-md bg-muted/30">
+                <div className="flex items-center gap-1 text-sm mb-1">
+                  <div className="h-2 w-2 rounded-full bg-[hsl(var(--chart-3))]" />
+                  <span className="font-medium">Neutral</span>
+                </div>
+                <span className="text-lg font-bold">{product.sentiment_distribution.neutral}%</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-[hsl(var(--chart-2))]" />
-              <span>Negative ({product.sentiment_distribution.negative}%)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-[hsl(var(--chart-3))]" />
-              <span>Neutral ({product.sentiment_distribution.neutral}%)</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Feedback Summary */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Feedback Summary</CardTitle>
-          <CardDescription>Key points from customer reviews</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="positive">
-            <TabsList className="mb-4">
-              <TabsTrigger value="positive">Positive</TabsTrigger>
-              <TabsTrigger value="negative">Negative</TabsTrigger>
-              <TabsTrigger value="neutral">Neutral</TabsTrigger>
-            </TabsList>
-            <TabsContent value="positive">
-              <ul className="space-y-2">
-                {product.feedback_summary.positive.map((feedback, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-primary/20 text-primary mr-2">+</span>
-                    <span>{feedback}</span>
-                  </li>
-                ))}
-              </ul>
-            </TabsContent>
-            <TabsContent value="negative">
-              <ul className="space-y-2">
-                {product.feedback_summary.negative.map((feedback, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-destructive/20 text-destructive mr-2">-</span>
-                    <span>{feedback}</span>
-                  </li>
-                ))}
-              </ul>
-            </TabsContent>
-            <TabsContent value="neutral">
-              <ul className="space-y-2">
-                {product.feedback_summary.neutral.map((feedback, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-muted text-muted-foreground mr-2">○</span>
-                    <span>{feedback}</span>
-                  </li>
-                ))}
-              </ul>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+        {/* Feedback Summary */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Feedback Summary</CardTitle>
+            <CardDescription>Key points from customer reviews</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="positive">
+              <TabsList className="w-full">
+                <TabsTrigger value="positive" className="flex-1">
+                  <ThumbsUp className="h-3.5 w-3.5 mr-1.5" /> Positive
+                </TabsTrigger>
+                <TabsTrigger value="negative" className="flex-1">
+                  <ThumbsDown className="h-3.5 w-3.5 mr-1.5" /> Negative
+                </TabsTrigger>
+                <TabsTrigger value="neutral" className="flex-1">
+                  <Minus className="h-3.5 w-3.5 mr-1.5" /> Neutral
+                </TabsTrigger>
+              </TabsList>
+              <div className="mt-3 h-[208px] overflow-y-auto">
+                <TabsContent value="positive" className="mt-0">
+                  <ul className="space-y-2">
+                    {product.feedback_summary.positive.map((feedback, index) => (
+                      <li key={index} className="flex items-start border-l-2 border-primary/50 pl-3 py-1">
+                        <span>{feedback}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </TabsContent>
+                <TabsContent value="negative" className="mt-0">
+                  <ul className="space-y-2">
+                    {product.feedback_summary.negative.map((feedback, index) => (
+                      <li key={index} className="flex items-start border-l-2 border-destructive/50 pl-3 py-1">
+                        <span>{feedback}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </TabsContent>
+                <TabsContent value="neutral" className="mt-0">
+                  <ul className="space-y-2">
+                    {product.feedback_summary.neutral.map((feedback, index) => (
+                      <li key={index} className="flex items-start border-l-2 border-muted-foreground/50 pl-3 py-1">
+                        <span>{feedback}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </TabsContent>
+              </div>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Feature Analysis */}
-      <Card className="mb-8">
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle>Feature Analysis</CardTitle>
           <CardDescription>Sentiment breakdown by product feature</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {product.features.map((feature, index) => (
-              <div key={index} className="border rounded-lg p-4">
-                <h3 className="text-lg font-medium mb-2">{feature.feature}</h3>
-                <div className="mb-2">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">Positive ({feature.sentiment_score.positive}%)</span>
-                    <span className="text-sm font-medium">Negative ({feature.sentiment_score.negative}%)</span>
+              <div key={index} className="border rounded-lg p-4 bg-card">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-medium">{feature.feature}</h3>
+                  <Badge variant={feature.sentiment_score.positive > 60 ? "outline" : "secondary"} className="text-xs">
+                    {feature.sentiment_score.positive > 60 ? "Good" : "Needs Improvement"}
+                  </Badge>
+                </div>
+                
+                <div className="mb-4">
+                  <div className="flex justify-between mb-1 text-xs font-medium">
+                    <span className="text-primary">{feature.sentiment_score.positive}%</span>
+                    <span className="text-destructive">{feature.sentiment_score.negative}%</span>
                   </div>
-                  <Progress value={feature.sentiment_score.positive} className="h-2" />
+                  <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="absolute top-0 left-0 h-full bg-primary"
+                      style={{ width: `${feature.sentiment_score.positive}%` }}
+                    />
+                  </div>
                 </div>
                 
-                <div className="mt-4">
-                  <h4 className="font-medium mb-2">Positive Feedback</h4>
-                  <ul className="list-disc pl-5 space-y-1">
-                    {feature.positive.map((item, idx) => (
-                      <li key={idx} className="text-sm">{item}</li>
-                    ))}
-                  </ul>
-                </div>
-                
-                <div className="mt-4">
-                  <h4 className="font-medium mb-2">Negative Feedback</h4>
-                  <ul className="list-disc pl-5 space-y-1">
-                    {feature.negative.map((item, idx) => (
-                      <li key={idx} className="text-sm">{item}</li>
-                    ))}
-                  </ul>
+                <div className="space-y-2">
+                  <div>
+                    <div className="flex items-center gap-1.5 text-sm mb-1">
+                      <ThumbsUp className="h-3.5 w-3.5 text-primary" />
+                      <span className="font-medium">Positive</span>
+                    </div>
+                    <ul className="text-xs pl-5 list-disc space-y-1">
+                      {feature.positive.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center gap-1.5 text-sm mb-1">
+                      <ThumbsDown className="h-3.5 w-3.5 text-destructive" />
+                      <span className="font-medium">Negative</span>
+                    </div>
+                    <ul className="text-xs pl-5 list-disc space-y-1">
+                      {feature.negative.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
             ))}
@@ -416,33 +485,33 @@ const SingleProduct = () => {
       </Card>
 
       {/* Feature Importance */}
-      <Card className="mb-8">
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle>Feature Importance</CardTitle>
           <CardDescription>Most discussed features in customer feedback</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={ChartConfig} className="h-80">
+          <ChartContainer config={ChartConfig} className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={featureImportanceData}>
-                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="name" tickLine={false} axisLine={false} />
                 <YAxis yAxisId="left" orientation="left" stroke="var(--color-mentions)" />
                 <YAxis yAxisId="right" orientation="right" stroke="var(--color-importance)" />
-                <Tooltip content={<ChartTooltipContent />} />
+                <Tooltip content={<ChartTooltipContent />} cursor={{fill: 'var(--muted)', opacity: 0.1}} />
                 <Legend />
-                <Bar yAxisId="left" dataKey="mentions" name="Mentions" fill="var(--color-mentions)" radius={4} />
-                <Bar yAxisId="right" dataKey="importance" name="Importance Score" fill="var(--color-importance)" radius={4} />
+                <Bar yAxisId="left" dataKey="mentions" name="Mentions" fill="var(--color-mentions)" radius={[4, 4, 0, 0]} />
+                <Bar yAxisId="right" dataKey="importance" name="Importance Score" fill="var(--color-importance)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
         </CardContent>
-        <CardFooter className="flex-col items-start gap-2 text-sm">
+        <CardFooter className="flex-col items-start gap-2 text-sm border-t pt-4">
           <div className="flex gap-2 font-medium leading-none">
-            <TrendingUp className="h-4 w-4" /> Battery is the most discussed feature
+            <TrendingUp className="h-4 w-4 text-primary" /> Battery is the most discussed feature
           </div>
           <div className="leading-none text-muted-foreground">
-            Shows frequency of mentions and calculated importance
+            Shows frequency of mentions and calculated importance score
           </div>
         </CardFooter>
       </Card>
@@ -463,14 +532,33 @@ const SingleProduct = () => {
             
             {Object.entries(product.competitor_analysis).map(([feature, competitors]) => (
               <TabsContent key={feature} value={feature}>
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {competitors.map((comp, idx) => (
-                    <div key={idx}>
+                    <div key={idx} className="border rounded-lg p-3">
                       <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">{comp.product_name}</span>
-                        <span className="text-sm text-muted-foreground">Positive: {comp.positive}% | Negative: {comp.negative}%</span>
+                        <span className="font-medium">{comp.product_name}</span>
+                        <div className="flex gap-2">
+                          <Badge variant={idx === 0 ? "default" : "outline"} className="text-xs">
+                            {idx === 0 ? "Our Product" : "Competitor"}
+                          </Badge>
+                        </div>
                       </div>
-                      <Progress value={comp.positive} className="h-2" />
+                      <div className="flex justify-between text-xs mb-1.5">
+                        <div className="flex items-center gap-1">
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                          <span>Positive: {comp.positive}%</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="h-2 w-2 rounded-full bg-destructive" />
+                          <span>Negative: {comp.negative}%</span>
+                        </div>
+                      </div>
+                      <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="absolute top-0 left-0 h-full bg-primary"
+                          style={{ width: `${comp.positive}%` }}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
