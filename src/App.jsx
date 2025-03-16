@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Homepage from "./pages/Homepage";
 import Loginpage from "./pages/Loginpage";
 import Signuppage from "./pages/Signuppage";
@@ -7,6 +7,7 @@ import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import { Toaster } from "sonner";
 import { useAuth } from "./context/AuthContext";
+import Footer from "./components/Footer";
 
 export default function App() {
   return (
@@ -47,19 +48,22 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
+      <Footer />
     </>
   );
 }
 
 const HeaderBasic = ({ children }) => (
-  <div>
+  <div className="min-h-screen flex flex-col">
     <Header />
-    {children}
+    <main className="flex-grow">
+      {children}
+    </main>
   </div>
 );
+
 const ProtectedRoute = ({ children }) => {
   const { loading, isAuthenticated } = useAuth();
-
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;

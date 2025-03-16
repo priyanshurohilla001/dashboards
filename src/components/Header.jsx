@@ -28,14 +28,14 @@ const Header = () => {
 
   return (
     <header className="border-b sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between py-6">
+      <div className="px-4 w-full flex h-16 items-center justify-between py-6">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             className="font-bold text-xl"
             onClick={() => navigate("/")}
           >
-            <Home className="mr-2 h-5 w-5" /> Doc
+            <img className="h-8 rounded-lg" src="/logo.png" ></img>
           </Button>
         </div>
 
