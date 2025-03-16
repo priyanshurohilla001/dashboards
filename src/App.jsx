@@ -6,7 +6,7 @@ import Dashboardpage from "./pages/Dashboardpage";
 import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
 import { Toaster } from "sonner";
-import { useAuth } from "./context/AuthContext";
+import { useSupabaseAuth } from "./context/SupabaseAuthContext";
 import Footer from "./components/Footer";
 
 export default function App() {
@@ -63,9 +63,9 @@ const HeaderBasic = ({ children }) => (
 );
 
 const ProtectedRoute = ({ children }) => {
-  const { loading, isAuthenticated } = useAuth();
+  const { loading, user } = useSupabaseAuth();
 
-  if (!isAuthenticated) {
+  if (!user) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
+import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
 import {
   Card,
   CardContent,
@@ -12,20 +11,12 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { Mail } from "lucide-react";
 
-const OtpVerification = () => {
-  const [loading, setLoading] = useState(false);
-  const [otpValue, setOtpValue] = useState("");
+const EmailVerification = () => {
   const [formData, setFormData] = useState(null);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { signUp } = useSupabaseAuth();
 
   useEffect(() => {
     // Get form data from sessionStorage
@@ -39,43 +30,10 @@ const OtpVerification = () => {
     setFormData(JSON.parse(storedData));
   }, [navigate]);
 
-  const handleVerifySubmit = async () => {
-    if (otpValue.length !== 6) {
-      toast.error("Please enter a valid verification code");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const serverUrl = import.meta.env.VITE_SERVER_URL;
-      
-      // In a real application, send the complete registration request with OTP
-      const res = await axios.post(`${serverUrl}/api/doctor/register`, {
-        ...formData,
-        otp: otpValue
-      });
-      
-      // Clear stored form data
-      sessionStorage.removeItem('signupFormData');
-      
-      toast.success("Account created successfully!");
-      login(res.data.token);
-      navigate("/dashboard");
-    } catch (error) {
-      console.error(error);
-      if (error.response) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error("Something went wrong");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resendOtp = () => {
-    // In a real application, send API request to resend OTP
-    toast.success("New verification code sent");
+  const handleLoginClick = () => {
+    // Clear stored form data
+    sessionStorage.removeItem('signupFormData');
+    navigate("/login");
   };
 
   if (!formData) {
@@ -85,51 +43,37 @@ const OtpVerification = () => {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle className="text-2xl">Verify your email</CardTitle>
-        <CardDescription>
-          We've sent a verification code to {formData.email}
+        <div className="flex flex-col items-center space-y-4">
+          <div className="rounded-full bg-primary/10 p-3">
+            <Mail className="h-6 w-6 text-primary" />
+          </div>
+          <CardTitle className="text-2xl text-center">Check Your Email</CardTitle>
+        </div>
+        <CardDescription className="text-center space-y-2">
+          <p>We've sent a verification link to:</p>
+          <p className="font-medium text-primary">{formData.email}</p>
+          <p className="text-sm text-muted-foreground mt-4">
+            Click the link in your email to verify your account. After verification, you can log in to access your account.
+          </p>
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col space-y-6">
-          <div>
-            <Label htmlFor="otp-input">Verification Code</Label>
-            <div className="mt-2 flex justify-center">
-              <InputOTP
-                id="otp-input"
-                maxLength={6}
-                value={otpValue}
-                onChange={setOtpValue}
-                pattern={REGEXP_ONLY_DIGITS}
-              >
-                <InputOTPGroup>
-                  {Array.from({ length: 6 }).map((_, index) => (
-                    <InputOTPSlot key={index} index={index} />
-                  ))}
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-          </div>
-          <Button 
-            onClick={handleVerifySubmit} 
-            className="w-full" 
-            disabled={loading || otpValue.length !== 6}
+      <CardContent className="flex flex-col space-y-4">
+        <Button 
+          onClick={handleLoginClick}
+          className="w-full"
+        >
+          Go to Login
+        </Button>
+        <p className="text-sm text-center text-muted-foreground">
+          Didn't receive the email?{" "}
+          <button 
+            onClick={() => signUp(formData.email, formData.password)}
+            className="text-sm font-medium underline-offset-4 hover:underline"
+            type="button"
           >
-            {loading ? "Verifying..." : "Create Account"}
-          </Button>
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              Didn't receive the code?{" "}
-              <button 
-                onClick={resendOtp}
-                className="text-sm font-medium underline-offset-4 hover:underline"
-                type="button"
-              >
-                Resend
-              </button>
-            </p>
-          </div>
-        </div>
+            Click here to resend
+          </button>
+        </p>
       </CardContent>
       <CardFooter className="flex justify-center">
         <Button 
@@ -144,4 +88,4 @@ const OtpVerification = () => {
   );
 };
 
-export default OtpVerification;
+export default EmailVerification;

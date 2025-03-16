@@ -23,24 +23,24 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-// Form validation schema
-const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email({ message: "Please enter a valid email address." }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters." }),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+// **Form validation schema**
+const formSchema = z
+  .object({
+    name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+    email: z.string().email({ message: "Please enter a valid email address." }),
+    password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 const SignupForm = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Initialize form
+  // Initialize form with react-hook-form
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,10 +51,10 @@ const SignupForm = () => {
     },
   });
 
+  // **Handle Signup Submission**
   const handleSignupSubmit = (values) => {
     setLoading(true);
     
-    // In a real application, you would send an API request to send OTP
     // Store form data in sessionStorage to access it in the verification component
     sessionStorage.setItem('signupFormData', JSON.stringify(values));
     
@@ -76,10 +76,7 @@ const SignupForm = () => {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form 
-            onSubmit={form.handleSubmit(handleSignupSubmit)} 
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSignupSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"

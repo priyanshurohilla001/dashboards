@@ -1,31 +1,36 @@
-import { useAuth } from "@/context/AuthContext";
+import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout.jsx";
 import { Button } from "@/components/ui/button.jsx";
-import SingleProduct from "./SingleProduct.jsx";
 
 // Dashboard home component
 const DashboardHome = () => {
-  const { user } = useAuth();
+  const { user } = useSupabaseAuth();
   return (
     <div>
-      <h2 className="text-2xl font-semibold">Hello {user?.name || "Doctor"}</h2>
+      <h2 className="text-2xl font-semibold">Hello {user?.email || "User"}</h2>
       <p className="mt-2">Welcome to your dashboard</p>
-      <Button>
-        hello
-      </Button>
     </div>
   );
 };
 
-// Appointments component
-const Appointments = () => {
+// Products component
+const Products = () => {
   return (
     <div>
-      <h2 className="text-2xl font-semibold">Your Appointments</h2>
-      <p className="mt-2">Manage your appointments here</p>
-      {/* Appointment-specific content goes here */}
+      <h2 className="text-2xl font-semibold">Products</h2>
+      <p className="mt-2">Manage your products here</p>
+    </div>
+  );
+};
+
+// Analyze Feedback component
+const AnalyzeFeedback = () => {
+  return (
+    <div>
+      <h2 className="text-2xl font-semibold">Analyze Feedback</h2>
+      <p className="mt-2">View and analyze customer feedback</p>
     </div>
   );
 };
@@ -35,8 +40,8 @@ const Dashboardpage = () => {
     <DashboardLayout>
       <Routes>
         <Route path="/" element={<DashboardHome />} />
-        <Route path="/appointments" element={<Appointments />} />
-        <Route path="/product/:id" element={<SingleProduct />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/analyze" element={<AnalyzeFeedback />} />
       </Routes>
     </DashboardLayout>
   );

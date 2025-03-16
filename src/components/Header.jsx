@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
 import { useNavigate } from "react-router-dom";
 import SwitchTheme from "./SwitchTheme";
 import { Button } from "./ui/button";
@@ -23,7 +23,7 @@ import {
 import { User, LogOut, LayoutDashboard, Home } from "lucide-react";
 
 const Header = () => {
-  const { isAuthenticated, logout , user } = useAuth();
+  const { isAuthenticated, signOut, user } = useSupabaseAuth();
   const navigate = useNavigate();
 
   return (
@@ -64,7 +64,7 @@ const Header = () => {
                           <Button 
                             variant="ghost" 
                             className="w-full justify-start text-destructive"
-                            onClick={logout}
+                            onClick={signOut}
                           >
                             <LogOut className="mr-2 h-4 w-4" />
                             Logout

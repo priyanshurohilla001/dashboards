@@ -7,43 +7,36 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/context/AuthContext";
+import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
 import { Label } from "@radix-ui/react-label";
-import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
-const Loginpage = () => {
+const LoginPage = () => {
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { signIn, user } = useSupabaseAuth(); // Get `user` from context
   const navigate = useNavigate();
-
   const location = useLocation();
   const returnTo = location.state?.from || "/dashboard";
+
+  // 🔹 Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    const serverUrl = import.meta.env.VITE_SERVER_URL;
     try {
       setLoading(true);
-      const res = await axios.post(`${serverUrl}/api/doctor/login`, {
-        email,
-        password,
-      });
-
-      login(res.data.token);
+      await signIn(email, password);
       navigate(returnTo, { replace: true });
     } catch (error) {
-      console.log(error);
-      if (error.response) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error("Something went wrong");
-      }
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -55,7 +48,7 @@ const Loginpage = () => {
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account.
+            Enter your email below to log in to your account.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -63,29 +56,23 @@ const Loginpage = () => {
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input type="email" id="email" placeholder="m@example.com" />
+                <Input type="email" id="email" placeholder="m@example.com" required />
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <a
-                    href="/forgot-password"
-                    className="text-sm underline-offset-4 hover:underline"
-                  >
+                  <a href="/forgot-password" className="text-sm underline-offset-4 hover:underline">
                     Forgot password?
                   </a>
                 </div>
-                <Input type="password" id="password" />
+                <Input type="password" id="password" required />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                Login
+                {loading ? "Signing in..." : "Sign in"}
               </Button>
               <p className="text-sm text-center">
                 Don't have an account?{" "}
-                <a
-                  href="/signup"
-                  className="text-sm underline-offset-4 hover:underline"
-                >
+                <a href="/signup" className="text-sm underline-offset-4 hover:underline">
                   Register
                 </a>
               </p>
@@ -97,4 +84,4 @@ const Loginpage = () => {
   );
 };
 
-export default Loginpage;
+export default LoginPage;

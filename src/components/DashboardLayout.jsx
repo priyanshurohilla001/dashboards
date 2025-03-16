@@ -1,17 +1,15 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import BreadcrumbDash from "./BreadcrumbDash";
 import SwitchTheme from "./SwitchTheme";
-import { useAuth } from "@/context/AuthContext";
+import { useSupabaseAuth } from "@/context/SupabaseAuthContext";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { 
   Home, 
-  CalendarClock, 
   LogOut,
-  Settings,
   Users,
-  FileText
+  BarChart
 } from "lucide-react";
 
 // Navigation items configuration
@@ -23,30 +21,19 @@ const navigationItems = [
     exact: true 
   },
   { 
-    name: "Appointments", 
-    path: "/dashboard/appointments", 
-    icon: CalendarClock 
-  },
-  { 
     name: "Products", 
     path: "/dashboard/products", 
     icon: Users 
   },
   { 
-    name: "Documents", 
-    path: "/dashboard/documents", 
-    icon: FileText 
-  },
-  { 
-    name: "Settings", 
-    path: "/dashboard/settings", 
-    icon: Settings 
+    name: "Analyze Feedback", 
+    path: "/dashboard/analyze", 
+    icon: BarChart 
   }
 ];
 
 const DashboardLayout = ({ children }) => {
-  const { logout } = useAuth();
-  const navigate = useNavigate();
+  const { signOut } = useSupabaseAuth();
 
   return (
     <div className="flex h-screen">
@@ -87,7 +74,7 @@ const DashboardLayout = ({ children }) => {
           <Button 
             variant="ghost" 
             className="w-full justify-start text-muted-foreground hover:text-destructive"
-            onClick={logout}
+            onClick={signOut}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Logout
