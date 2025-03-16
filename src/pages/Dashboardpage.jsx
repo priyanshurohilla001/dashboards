@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { BarChart as BarChartIcon, LineChart, Pencil, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
+import { BarChart as BarChartIcon, LineChart, Pencil, ChevronDown, ChevronUp, ArrowLeft, Star, ThumbsUp, ThumbsDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,211 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js';
+import { Bar, Pie } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
+
+// Mock sentiment data
+const mockSentimentData = {
+  "products": [
+    {
+      "_id": "45735423497KAJJ",
+      "product_name": "MacBook Pro 16",
+      "positive_count": 856,
+      "negative_count": 124,
+      "neutral_count": 220,
+      "positive": {
+        "features": ["Performance", "Display Quality", "Build Quality"],
+        "counts": [245, 180, 165]
+      },
+      "negative": {
+        "features": ["Price", "Battery Life", "Port Selection"],
+        "counts": [45, 32, 28]
+      },
+      "competitor_analysis": [
+        {
+          "product_name": "MacBook Pro 16",
+          "ratings": [
+            { "stars": 1, "amount": 24 },
+            { "stars": 2, "amount": 45 },
+            { "stars": 3, "amount": 120 },
+            { "stars": 4, "amount": 325 },
+            { "stars": 5, "amount": 486 }
+          ],
+          "filters": [
+            { "label": "Performance", "count": 425 },
+            { "label": "Display", "count": 380 },
+            { "label": "Build Quality", "count": 365 },
+            { "label": "Battery Life", "count": 320 },
+            { "label": "Keyboard", "count": 280 },
+            { "label": "Speakers", "count": 245 },
+            { "label": "Port Selection", "count": 220 },
+            { "label": "Price", "count": 195 },
+            { "label": "Software", "count": 175 },
+            { "label": "Webcam", "count": 150 }
+          ]
+        },
+        {
+          "product_name": "Dell XPS 17",
+          "ratings": [
+            { "stars": 1, "amount": 35 },
+            { "stars": 2, "amount": 68 },
+            { "stars": 3, "amount": 156 },
+            { "stars": 4, "amount": 287 },
+            { "stars": 5, "amount": 354 }
+          ],
+          "filters": [
+            { "label": "Performance", "count": 380 },
+            { "label": "Display", "count": 345 },
+            { "label": "Build Quality", "count": 310 },
+            { "label": "Price", "count": 285 }
+          ]
+        },
+        {
+          "product_name": "Razer Blade 17",
+          "ratings": [
+            { "stars": 1, "amount": 42 },
+            { "stars": 2, "amount": 75 },
+            { "stars": 3, "amount": 168 },
+            { "stars": 4, "amount": 245 },
+            { "stars": 5, "amount": 320 }
+          ]
+        },
+        {
+          "product_name": "ASUS ROG Zephyrus",
+          "ratings": [
+            { "stars": 1, "amount": 38 },
+            { "stars": 2, "amount": 82 },
+            { "stars": 3, "amount": 175 },
+            { "stars": 4, "amount": 268 },
+            { "stars": 5, "amount": 337 }
+          ]
+        }
+      ],
+      "reviews": [
+        {
+          "review": "The M1 Max performance is absolutely incredible for my video editing work.",
+          "sentiment": "positive",
+          "confidence": 0.95
+        },
+        {
+          "review": "Beautiful display, but the price is really steep for what you get.",
+          "sentiment": "neutral",
+          "confidence": 0.82
+        },
+        {
+          "review": "Battery life isn't as good as advertised when running intensive tasks.",
+          "sentiment": "negative",
+          "confidence": 0.88
+        },
+        {
+          "review": "The build quality is exceptional, feels very premium.",
+          "sentiment": "positive",
+          "confidence": 0.91
+        },
+        {
+          "review": "Limited port selection means I need to carry dongles everywhere.",
+          "sentiment": "negative",
+          "confidence": 0.85
+        }
+      ]
+    },
+    {
+      "_id": "67d66f3010cc0d992fabe38a",
+      "product_name": "iPhone 15 Pro",
+      "positive_count": 925,
+      "negative_count": 145,
+      "neutral_count": 230,
+      "positive": {
+        "features": ["Camera Quality", "Performance", "Design"],
+        "counts": [285, 265, 210]
+      },
+      "negative": {
+        "features": ["Battery Life", "Price", "USB-C Adoption"],
+        "counts": [52, 48, 35]
+      },
+      "competitor_analysis": [
+        {
+          "product_name": "iPhone 15 Pro",
+          "ratings": [
+            { "stars": 1, "amount": 28 },
+            { "stars": 2, "amount": 52 },
+            { "stars": 3, "amount": 145 },
+            { "stars": 4, "amount": 378 },
+            { "stars": 5, "amount": 547 }
+          ],
+          "filters": [
+            { "label": "Camera System", "count": 485 },
+            { "label": "Performance", "count": 425 },
+            { "label": "Design", "count": 380 },
+            { "label": "Display", "count": 345 },
+            { "label": "Battery Life", "count": 320 },
+            { "label": "5G", "count": 280 },
+            { "label": "USB-C", "count": 265 },
+            { "label": "Price", "count": 245 },
+            { "label": "iOS", "count": 220 },
+            { "label": "ProMotion", "count": 195 }
+          ]
+        },
+        {
+          "product_name": "Samsung Galaxy S23 Ultra",
+          "ratings": [
+            { "stars": 1, "amount": 32 },
+            { "stars": 2, "amount": 58 },
+            { "stars": 3, "amount": 165 },
+            { "stars": 4, "amount": 342 },
+            { "stars": 5, "amount": 503 }
+          ]
+        },
+        {
+          "product_name": "Google Pixel 8 Pro",
+          "ratings": [
+            { "stars": 1, "amount": 35 },
+            { "stars": 2, "amount": 62 },
+            { "stars": 3, "amount": 158 },
+            { "stars": 4, "amount": 325 },
+            { "stars": 5, "amount": 420 }
+          ]
+        }
+      ],
+      "reviews": [
+        {
+          "review": "The camera system is absolutely phenomenal, especially in low light.",
+          "sentiment": "positive",
+          "confidence": 0.94
+        },
+        {
+          "review": "USB-C is finally here but now I need new cables.",
+          "sentiment": "neutral",
+          "confidence": 0.78
+        },
+        {
+          "review": "Battery life could be better with heavy use.",
+          "sentiment": "negative",
+          "confidence": 0.86
+        }
+      ]
+    }
+  ]
+};
 
 // Dashboard home component
 const DashboardHome = () => {
@@ -209,36 +414,155 @@ const ProductAnalytics = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sentimentData, setSentimentData] = useState(null);
+  const [selectedCompetitor, setSelectedCompetitor] = useState(null);
 
   useEffect(() => {
-    fetchProductDetails();
+    const fetchData = async () => {
+      try {
+        // First try to get the product from Supabase
+        const { data: supabaseProduct, error: supabaseError } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', productId)
+          .single();
+
+        if (supabaseError) throw supabaseError;
+        setProduct(supabaseProduct);
+
+        // Get the mock sentiment data
+        const productSentiment = mockSentimentData.products.find(p => 
+          p.product_name.toLowerCase() === supabaseProduct.p_name.toLowerCase()
+        );
+        
+        if (!productSentiment) {
+          // If no exact match, use the first mock product as fallback
+          setSentimentData(mockSentimentData.products[0]);
+        } else {
+          setSentimentData(productSentiment);
+        }
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError(err.message);
+        // Use mock data as fallback
+        setProduct({ id: productId, p_name: mockSentimentData.products[0].product_name });
+        setSentimentData(mockSentimentData.products[0]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [productId]);
 
-  const fetchProductDetails = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', productId)
-        .single();
+  const getCompetitorChartData = () => {
+    if (!sentimentData?.competitor_analysis) return null;
 
-      if (error) throw error;
-      setProduct(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    const competitors = sentimentData.competitor_analysis
+      .filter(c => c.ratings && c.ratings.length > 0)
+      .slice(0, 5);
+
+    const labels = competitors.map(c => c.product_name.substring(0, 20) + '...');
+    const ratings = competitors.map(c => {
+      const totalRatings = c.ratings.reduce((acc, r) => acc + r.amount, 0);
+      const weightedSum = c.ratings.reduce((acc, r) => acc + (r.stars * r.amount), 0);
+      return totalRatings > 0 ? (weightedSum / totalRatings).toFixed(1) : 0;
+    });
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Average Rating',
+          data: ratings,
+          backgroundColor: 'rgba(75, 192, 192, 0.5)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+        },
+      ],
+    };
   };
 
-  if (loading) return <div>Loading product analytics...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!product) return <div>Product not found</div>;
+  const getRatingDistributionData = (competitor) => {
+    if (!competitor?.ratings) return null;
+
+    return {
+      labels: ['1★', '2★', '3★', '4★', '5★'],
+      datasets: [
+        {
+          label: 'Number of Ratings',
+          data: competitor.ratings.map(r => r.amount),
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.5)',
+            'rgba(255, 159, 64, 0.5)',
+            'rgba(255, 205, 86, 0.5)',
+            'rgba(75, 192, 192, 0.5)',
+            'rgba(54, 162, 235, 0.5)',
+          ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(255, 159, 64, 1)',
+            'rgba(255, 205, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(54, 162, 235, 1)',
+          ],
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
+
+  const getFeatureComparisonData = () => {
+    if (!sentimentData?.competitor_analysis) return null;
+
+    const mainCompetitor = sentimentData.competitor_analysis[0];
+    if (!mainCompetitor?.filters) return null;
+
+    const topFeatures = mainCompetitor.filters
+      .slice(0, 10)
+      .sort((a, b) => b.count - a.count);
+
+    return {
+      labels: topFeatures.map(f => f.label),
+      datasets: [
+        {
+          label: 'Feature Mentions',
+          data: topFeatures.map(f => f.count),
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="text-lg">Loading product analytics...</div>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="text-lg text-red-500">Error: {error}</div>
+    </div>
+  );
+  
+  if (!product || !sentimentData) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="text-lg">No data available for this product</div>
+    </div>
+  );
+
+  const competitorChartData = getCompetitorChartData();
+  const featureComparisonData = getFeatureComparisonData();
+  const selectedCompetitorData = selectedCompetitor ? 
+    sentimentData?.competitor_analysis?.find(c => c.product_name === selectedCompetitor) : null;
+  const ratingDistributionData = getRatingDistributionData(selectedCompetitorData);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
+    <div className="space-y-6 p-6">
+      <div className="flex items-center gap-4 mb-6">
         <Button 
           variant="ghost" 
           size="sm" 
@@ -252,73 +576,173 @@ const ProductAnalytics = () => {
       </div>
 
       <div className="grid gap-6">
+        {/* Sentiment Overview */}
         <Card>
           <CardHeader>
-            <CardTitle>Product Overview</CardTitle>
-            <CardDescription>{product.p_description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">
-              ${product.p_price}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Sales Overview</CardTitle>
+            <CardTitle>Sentiment Overview</CardTitle>
+            <CardDescription>Analysis of customer reviews and sentiments</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Total Sales</CardTitle>
-                  <div className="text-2xl font-bold">$12,450</div>
+                <CardHeader className="p-4">
+                  <CardTitle className="text-sm">Positive Reviews</CardTitle>
+                  <div className="text-2xl font-bold text-green-600 flex items-center gap-2">
+                    <ThumbsUp className="h-5 w-5" />
+                    {sentimentData.positive_count}
+                  </div>
                 </CardHeader>
               </Card>
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Units Sold</CardTitle>
-                  <div className="text-2xl font-bold">284</div>
+                <CardHeader className="p-4">
+                  <CardTitle className="text-sm">Negative Reviews</CardTitle>
+                  <div className="text-2xl font-bold text-red-600 flex items-center gap-2">
+                    <ThumbsDown className="h-5 w-5" />
+                    {sentimentData.negative_count}
+                  </div>
                 </CardHeader>
               </Card>
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Average Rating</CardTitle>
-                  <div className="text-2xl font-bold">4.8/5</div>
+                <CardHeader className="p-4">
+                  <CardTitle className="text-sm">Neutral Reviews</CardTitle>
+                  <div className="text-2xl font-bold text-gray-600">
+                    {sentimentData.neutral_count}
+                  </div>
                 </CardHeader>
               </Card>
             </div>
           </CardContent>
         </Card>
 
+        {/* Key Features */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>Key Features Analysis</CardTitle>
+            <CardDescription>Most discussed features in reviews</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex justify-between items-center border-b pb-4">
-                <div>
-                  <div className="font-medium">New Sale</div>
-                  <div className="text-sm text-muted-foreground">2 units purchased</div>
-                </div>
-                <div className="text-sm">2 hours ago</div>
+              <div className="space-y-2">
+                <h3 className="font-medium text-green-700">Positive Features</h3>
+                {sentimentData.positive.features.map((feature, index) => (
+                  <div key={feature} className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+                    <span className="font-medium text-green-700">{feature}</span>
+                    <span className="text-sm text-green-600">Mentioned {sentimentData.positive.counts[index]} times</span>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between items-center border-b pb-4">
-                <div>
-                  <div className="font-medium">Customer Review</div>
-                  <div className="text-sm text-muted-foreground">5-star rating received</div>
-                </div>
-                <div className="text-sm">1 day ago</div>
+              <div className="space-y-2">
+                <h3 className="font-medium text-red-700">Negative Features</h3>
+                {sentimentData.negative.features.map((feature, index) => (
+                  <div key={feature} className="flex items-center justify-between p-2 bg-red-50 rounded-lg">
+                    <span className="font-medium text-red-700">{feature}</span>
+                    <span className="text-sm text-red-600">Mentioned {sentimentData.negative.counts[index]} times</span>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between items-center border-b pb-4">
-                <div>
-                  <div className="font-medium">Price Update</div>
-                  <div className="text-sm text-muted-foreground">Price adjusted to ${product.p_price}</div>
-                </div>
-                <div className="text-sm">3 days ago</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Competitor Analysis */}
+        {competitorChartData && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Competitor Analysis</CardTitle>
+              <CardDescription>Click on a competitor to see detailed rating distribution</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                <Bar
+                  data={competitorChartData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        max: 5,
+                        title: {
+                          display: true,
+                          text: 'Average Rating'
+                        }
+                      }
+                    },
+                    onClick: (event, elements) => {
+                      if (elements.length > 0) {
+                        const idx = elements[0].index;
+                        setSelectedCompetitor(sentimentData.competitor_analysis[idx].product_name);
+                      }
+                    }
+                  }}
+                />
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Rating Distribution */}
+        {ratingDistributionData && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Rating Distribution for {selectedCompetitor}</CardTitle>
+              <CardDescription>Breakdown of ratings from 1 to 5 stars</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                <Bar
+                  data={ratingDistributionData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        title: {
+                          display: true,
+                          text: 'Number of Reviews'
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Recent Reviews */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Reviews</CardTitle>
+            <CardDescription>Latest customer feedback and sentiments</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {sentimentData.reviews.map((review, index) => (
+                <div
+                  key={index}
+                  className={`p-4 rounded-lg border ${
+                    review.sentiment === 'positive' ? 'bg-green-50 border-green-200' :
+                    review.sentiment === 'negative' ? 'bg-red-50 border-red-200' :
+                    'bg-gray-50 border-gray-200'
+                  }`}
+                >
+                  <p className="text-sm mb-2">{review.review}</p>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className={`font-medium ${
+                      review.sentiment === 'positive' ? 'text-green-600' :
+                      review.sentiment === 'negative' ? 'text-red-600' :
+                      'text-gray-600'
+                    }`}>
+                      {review.sentiment.charAt(0).toUpperCase() + review.sentiment.slice(1)}
+                    </span>
+                    <span className="text-gray-500">
+                      Confidence: {Math.round(review.confidence * 100)}%
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
