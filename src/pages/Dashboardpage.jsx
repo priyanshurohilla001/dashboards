@@ -839,6 +839,12 @@ const ProductDetails = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [newReview, setNewReview] = useState({
+    username: '',
+    stars: 5,
+    review: ''
+  });
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -883,6 +889,65 @@ const ProductDetails = () => {
     acc[review.stars] = (acc[review.stars] || 0) + 1;
     return acc;
   }, {});
+
+  const handleReviewInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewReview(prev => ({
+      ...prev,
+      [name]: name === 'stars' ? parseInt(value) : value
+    }));
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (!product) {
+        toast.error("Product not found");
+        return;
+      }
+
+      // Create the new review object
+      const newReviewObj = {
+        username: newReview.username,
+        stars: parseInt(newReview.stars),
+        review: newReview.review,
+        product_id: productId,
+        date: new Date().toISOString() // Add timestamp for sorting
+      };
+
+      // Get existing reviews and append new review
+      const updatedReviews = [...(product.p_reviews || []), newReviewObj];
+
+      // Update the product with new reviews array
+      const { data, error: updateError } = await supabase
+        .from('products')
+        .update({ 
+          p_reviews: updatedReviews 
+        })
+        .eq('id', productId)
+        .select()
+        .single();
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Update local state with the returned data
+      setProduct(data);
+      setReviews(data.p_reviews);
+      
+      // Show success message
+      toast.success("Review added successfully!");
+      
+      // Reset form and close dialog
+      setNewReview({ username: '', stars: 5, review: '' });
+      setIsReviewDialogOpen(false);
+
+    } catch (err) {
+      console.error('Error adding review:', err);
+      toast.error(err.message || "Failed to add review");
+    }
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -936,23 +1001,91 @@ const ProductDetails = () => {
         {/* Product Reviews Summary */}
         <Card>
           <CardHeader>
-            <CardTitle>Customer Reviews</CardTitle>
-            <CardDescription className="flex items-center gap-2">
-              <div className="flex items-center">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`h-5 w-5 ${
-                      star <= Math.floor(averageRating)
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "fill-gray-200 text-gray-200"
-                    }`}
-                  />
-                ))}
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Customer Reviews</CardTitle>
+                <CardDescription className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`h-5 w-5 ${
+                          star <= Math.floor(averageRating)
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "fill-gray-200 text-gray-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-medium">{averageRating} out of 5</span>
+                  <span className="text-gray-500">({reviews.length} reviews)</span>
+                </CardDescription>
               </div>
-              <span className="font-medium">{averageRating} out of 5</span>
-              <span className="text-gray-500">({reviews.length} reviews)</span>
-            </CardDescription>
+              <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>Write a Review</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Write a Review</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleReviewSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="username">Your Name</Label>
+                      <Input
+                        id="username"
+                        name="username"
+                        value={newReview.username}
+                        onChange={handleReviewInputChange}
+                        placeholder="Enter your name"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="stars">Rating</Label>
+                      <div className="flex items-center gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setNewReview(prev => ({ ...prev, stars: star }))}
+                            className="focus:outline-none"
+                          >
+                            <Star
+                              className={`h-6 w-6 ${
+                                star <= newReview.stars
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "fill-gray-200 text-gray-200"
+                              }`}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="review">Your Review</Label>
+                      <textarea
+                        id="review"
+                        name="review"
+                        value={newReview.review}
+                        onChange={handleReviewInputChange}
+                        placeholder="Write your review here..."
+                        className="w-full min-h-[100px] px-3 py-2 border rounded-md"
+                        required
+                      />
+                    </div>
+                    <div className="flex justify-end gap-3">
+                      <Button type="button" variant="outline" onClick={() => setIsReviewDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit">
+                        Post Review
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
           </CardHeader>
           <CardContent>
             {/* Rating Distribution */}
