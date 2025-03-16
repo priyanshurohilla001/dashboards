@@ -247,6 +247,7 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const navigate = useNavigate();
   const [newProduct, setNewProduct] = useState({
     p_name: '',
     p_description: '',
@@ -394,10 +395,22 @@ const Products = () => {
                 ${product.p_price}
               </div>
             </CardContent>
-            <CardFooter className="flex justify-end">
-              <Button variant="ghost" size="sm" className="flex items-center gap-2">
+            <CardFooter className="flex justify-end gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex items-center gap-2"
+              >
                 <Pencil className="h-4 w-4" />
                 Edit
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => navigate(`/dashboard/products/${product.id}`)}
+                className="flex items-center gap-2"
+              >
+                View Details
               </Button>
             </CardFooter>
           </Card>
@@ -555,7 +568,6 @@ const ProductAnalytics = () => {
   );
 
   const competitorChartData = getCompetitorChartData();
-  const featureComparisonData = getFeatureComparisonData();
   const selectedCompetitorData = selectedCompetitor ? 
     sentimentData?.competitor_analysis?.find(c => c.product_name === selectedCompetitor) : null;
   const ratingDistributionData = getRatingDistributionData(selectedCompetitorData);
@@ -819,12 +831,198 @@ const AnalyzeFeedback = () => {
   );
 };
 
+// Product Details Component
+const ProductDetails = () => {
+  const { productId } = useParams();
+  const navigate = useNavigate();
+  const [product, setProduct] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      try {
+        setLoading(true);
+        // Fetch product details including reviews in a single query
+        const { data: productData, error: productError } = await supabase
+          .from('products')
+          .select(`
+            *,
+            p_reviews
+          `)
+          .eq('id', productId)
+          .single();
+
+        if (productError) throw productError;
+        
+        setProduct(productData);
+        // Parse reviews if they exist, otherwise use empty array
+        const productReviews = productData.p_reviews || [];
+        console.log('Fetched reviews:', productReviews); // Debug log
+        setReviews(productReviews);
+
+      } catch (err) {
+        console.error('Error fetching product details:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductDetails();
+  }, [productId]);
+
+  // Calculate average rating
+  const averageRating = reviews.length > 0
+    ? (reviews.reduce((acc, review) => acc + review.stars, 0) / reviews.length).toFixed(1)
+    : 0;
+
+  // Group reviews by star rating
+  const ratingCounts = reviews.reduce((acc, review) => {
+    acc[review.stars] = (acc[review.stars] || 0) + 1;
+    return acc;
+  }, {});
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="text-lg">Loading product details...</div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="text-lg text-red-500">Error: {error}</div>
+    </div>
+  );
+
+  if (!product) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="text-lg">Product not found</div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6 p-6">
+      <div className="flex items-center gap-4 mb-6">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate('/dashboard/products')}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Products
+        </Button>
+        <h2 className="text-2xl font-semibold">{product.p_name}</h2>
+      </div>
+
+      <div className="grid gap-6">
+        {/* Product Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-3xl">{product.p_name}</CardTitle>
+            <CardDescription className="text-lg mt-2">
+              {product.p_description}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-primary">
+              ${product.p_price}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Product Reviews Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Customer Reviews</CardTitle>
+            <CardDescription className="flex items-center gap-2">
+              <div className="flex items-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`h-5 w-5 ${
+                      star <= Math.floor(averageRating)
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "fill-gray-200 text-gray-200"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="font-medium">{averageRating} out of 5</span>
+              <span className="text-gray-500">({reviews.length} reviews)</span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Rating Distribution */}
+            <div className="space-y-2 mb-6">
+              {[5, 4, 3, 2, 1].map((stars) => (
+                <div key={stars} className="flex items-center gap-2">
+                  <div className="w-12 text-sm">{stars} stars</div>
+                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-yellow-400"
+                      style={{
+                        width: reviews.length ? `${(ratingCounts[stars] || 0) / reviews.length * 100}%` : '0%'
+                      }}
+                    />
+                  </div>
+                  <div className="w-12 text-sm text-gray-500">
+                    {ratingCounts[stars] || 0}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Individual Reviews */}
+            <div className="space-y-4">
+              {reviews && reviews.length > 0 ? (
+                reviews.map((review, index) => (
+                  <div
+                    key={index}
+                    className="border rounded-lg p-4 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{review.username}</span>
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-4 w-4 ${
+                                i < review.stars
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "fill-gray-200 text-gray-200"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600">{review.review}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-gray-500">
+                  No reviews yet
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
 const Dashboardpage = () => {
   return (
     <DashboardLayout>
       <Routes>
         <Route path="/" element={<DashboardHome />} />
         <Route path="/products" element={<Products />} />
+        <Route path="/products/:productId" element={<ProductDetails />} />
         <Route path="/analyze" element={<AnalyzeFeedback />} />
         <Route path="/analyze/:productId" element={<ProductAnalytics />} />
       </Routes>
