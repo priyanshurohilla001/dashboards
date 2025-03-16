@@ -30,7 +30,7 @@ export default function App() {
           }
         />
         <Route
-          path="/signup"
+          path="/signup/*"
           element={
             <HeaderBasic>
               <Signuppage />

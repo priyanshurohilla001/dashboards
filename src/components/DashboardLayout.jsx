@@ -28,8 +28,8 @@ const navigationItems = [
     icon: CalendarClock 
   },
   { 
-    name: "Patients", 
-    path: "/dashboard/patients", 
+    name: "Products", 
+    path: "/dashboard/products", 
     icon: Users 
   },
   { 

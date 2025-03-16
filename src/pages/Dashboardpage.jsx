@@ -3,6 +3,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout.jsx";
 import { Button } from "@/components/ui/button.jsx";
+import SingleProduct from "./SingleProduct.jsx";
 
 // Dashboard home component
 const DashboardHome = () => {
@@ -35,6 +36,7 @@ const Dashboardpage = () => {
       <Routes>
         <Route path="/" element={<DashboardHome />} />
         <Route path="/appointments" element={<Appointments />} />
+        <Route path="/product/:id" element={<SingleProduct />} />
       </Routes>
     </DashboardLayout>
   );
